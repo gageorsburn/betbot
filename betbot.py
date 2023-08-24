@@ -16,6 +16,9 @@ load_dotenv()
 SIEGESTATS_PLAYER_URL = "https://siegestats.cc/stats/player/{}/{}"
 SERVER_MAP = {"totemia": 1, "mushpoie": 4}
 
+PREVIEW_SERVERS = [1049918229981691904, 1135323031498149929]
+BAD_BP = "Cuhz"
+
 
 ids_player_messages = cachetools.TTLCache(maxsize=128, ttl=60 * 60 * 24)
 
@@ -35,7 +38,10 @@ class BetBotClient(discord.Client):
 
         if message.mention_everyone:
             return
-       
+
+        if BAD_BP.lower() in message.content.lower() and message.channel.guild.id in PREVIEW_SERVERS:
+            await message.channel.send(f"{message.author.mention} Did you mean to say clown?")
+
         if not self.user.mentioned_in(message=message):
             return
         
@@ -122,7 +128,7 @@ def get_player_avg(server_name: str, player_name: str, last_count=4) -> int:
 
 def main():
     intents = discord.Intents.default()
-    #intents.message_content = True
+    intents.message_content = True
     
     client = BetBotClient(intents=intents)
     client.run(os.getenv("DISCORD_TOKEN"))
