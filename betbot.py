@@ -55,7 +55,7 @@ class BetBotClient(discord.Client):
             win_count, lose_count = 0, 0
 
             for player, player_server_message in players_in_bet.items():
-                last_score = get_player_avg(player_server_message.server, player_name=player, last_count=1)
+                last_score = get_player_avg(player_server_message.server, player_name=player, last_index=0)
                 player_message = await message.channel.fetch_message(player_server_message.message_id)
                 old_avg = float(player_message.content.split(" ")[2])
 
@@ -100,7 +100,7 @@ class BetBotClient(discord.Client):
         await sent_message.channel.send(f"Bet ID: {bet_id}")
 
 
-def get_player_avg(server_name: str, player_name: str, last_count=4) -> int:
+def get_player_avg(server_name: str, player_name: str, last_index=4) -> int:
     server_id = SERVER_MAP.get(server_name, 4)
     url = SIEGESTATS_PLAYER_URL.format(server_id, player_name)
     response = requests.get(url)
@@ -115,7 +115,7 @@ def get_player_avg(server_name: str, player_name: str, last_count=4) -> int:
     total_points = 0
 
     for row in rows:
-        if count > last_count:
+        if count > last_index:
             break
 
         count += 1
