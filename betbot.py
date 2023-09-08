@@ -8,6 +8,7 @@ import discord
 import os
 import requests
 import uuid
+import threading
 
 
 load_dotenv()
@@ -18,6 +19,13 @@ SERVER_MAP = {"totemia": 1, "mushpoie": 4}
 
 PREVIEW_SERVERS = [1049918229981691904, 1135323031498149929]
 BAD_BP = "Cuhz"
+
+PROZAKI_COUNTER = 0
+PROZAKI_COUNTER_LOCK = threading.Lock()
+
+PROZAKI_DISCORD_USER_ID = 1034122619819151491
+JOSH_DISCORD_USER_ID = 172982413067157504
+# JOSH_DISCORD_USER_ID = 143992911153987584 # temp gages for testing
 
 
 ids_player_messages = cachetools.TTLCache(maxsize=128, ttl=60 * 60 * 24)
@@ -41,6 +49,12 @@ class BetBotClient(discord.Client):
 
         if BAD_BP.lower() in message.content.lower() and message.channel.guild.id in PREVIEW_SERVERS:
             await message.channel.send(f"{message.author.mention} Did you mean to say clown?")
+
+        global PROZAKI_COUNTER
+
+        if "prozaki" in message.content.lower() and message.channel.guild.id in PREVIEW_SERVERS and message.author.id == JOSH_DISCORD_USER_ID:
+            with PROZAKI_COUNTER_LOCK:
+                PROZAKI_COUNTER += 1
 
         if not self.user.mentioned_in(message=message):
             return
@@ -70,6 +84,11 @@ class BetBotClient(discord.Client):
 
             await message.channel.send(f"Win Count: {win_count}\nLose Count: {lose_count}")
             return
+
+        if server == "sutoka" and message.channel.guild.id in PREVIEW_SERVERS:
+            with PROZAKI_COUNTER_LOCK:
+                await message.channel.send(f"<@{JOSH_DISCORD_USER_ID}> has mentioned <@{PROZAKI_DISCORD_USER_ID}> {PROZAKI_COUNTER} times since I was started.")
+                return
 
         names = content[2:]
 
@@ -128,6 +147,7 @@ def get_player_avg(server_name: str, player_name: str, last_index=4) -> int:
 
 def main():
     intents = discord.Intents.default()
+    # intents.members = True
     intents.message_content = True
     
     client = BetBotClient(intents=intents)
