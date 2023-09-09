@@ -15,7 +15,7 @@ load_dotenv()
 
 
 SIEGESTATS_PLAYER_URL = "https://siegestats.cc/stats/player/{}/{}"
-SERVER_MAP = {"totemia": 1, "mushpoie": 4}
+SERVER_MAP = {"totemia": 1, "mushpoie": 4, "fwc": 18}
 
 PREVIEW_SERVERS = [1049918229981691904, 1135323031498149929]
 BAD_BP = "Cuhz"
