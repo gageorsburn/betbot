@@ -43,11 +43,14 @@ class BetBotClient(discord.Client):
     async def on_ready(self):
         print(f"Logged on as {self.user}")
 
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         if message.author == self.user:
             return
 
         if message.mention_everyone:
+            return
+
+        if message.reference is not None:
             return
 
         # repost juicy's messages
@@ -126,7 +129,7 @@ class BetBotClient(discord.Client):
                print(e)
                await message.channel.send(f"Couldn't fetch stats for '{name}'")
 
-        await sent_message.channel.send(f"Bet ID: {bet_id}")
+        await message.channel.send(f"Bet ID: {bet_id}")
 
 
 def get_player_avg(server_name: str, player_name: str, last_index=4) -> int:
