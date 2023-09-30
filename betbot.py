@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from collections import defaultdict
+from datetime import datetime
 from dotenv import load_dotenv
 from typing import NamedTuple
 
@@ -27,6 +28,8 @@ PROZAKI_DISCORD_USER_ID = 1034122619819151491
 JOSH_DISCORD_USER_ID = 172982413067157504
 # JOSH_DISCORD_USER_ID = 143992911153987584 # temp gages for testing
 
+START_TIME = datetime.now().isoformat()
+
 
 ids_player_messages = cachetools.TTLCache(maxsize=128, ttl=60 * 60 * 24)
 
@@ -47,6 +50,10 @@ class BetBotClient(discord.Client):
         if message.mention_everyone:
             return
 
+        # repost juicy's messages
+        if message.author.id == 123273704846262272:
+            await message.channel.send(f"{message.author.mention}: {message.content}")
+
         if BAD_BP.lower() in message.content.lower() and message.channel.guild.id in PREVIEW_SERVERS:
             await message.channel.send(f"{message.author.mention} Did you mean to say clown?")
 
@@ -55,6 +62,9 @@ class BetBotClient(discord.Client):
         if "prozaki" in message.content.lower() and message.channel.guild.id in PREVIEW_SERVERS and message.author.id == JOSH_DISCORD_USER_ID:
             with PROZAKI_COUNTER_LOCK:
                 PROZAKI_COUNTER += 1
+
+        # if "brandon" in message.content.lower() and message.channel.guild.id in PREVIEW_SERVERS:
+        #     await message.channel.send("https://cdn.discordapp.com/attachments/1089379583117242509/1143321657323294810/Screenshot_2023-08-21_191151.png?ex=651759c4&is=65160844&hm=6ba1864402f0f60f09cb710ef66e598de0d6d08c5cef99617afc1429297e104f&")
 
         if not self.user.mentioned_in(message=message):
             return
@@ -87,7 +97,7 @@ class BetBotClient(discord.Client):
 
         if server == "sutoka" and message.channel.guild.id in PREVIEW_SERVERS:
             with PROZAKI_COUNTER_LOCK:
-                await message.channel.send(f"<@{JOSH_DISCORD_USER_ID}> has mentioned <@{PROZAKI_DISCORD_USER_ID}> {PROZAKI_COUNTER} times since I was started.")
+                await message.channel.send(f"<@{JOSH_DISCORD_USER_ID}> has mentioned <@{PROZAKI_DISCORD_USER_ID}> {PROZAKI_COUNTER} times since I was started on {START_TIME}.")
                 return
 
         names = content[2:]
