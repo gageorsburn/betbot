@@ -27,6 +27,7 @@ PROZAKI_COUNTER_LOCK = threading.Lock()
 PROZAKI_DISCORD_USER_ID = 1034122619819151491
 JOSH_DISCORD_USER_ID = 172982413067157504
 JUICY_DISCORD_USER_ID = 123273704846262272
+SNOODLE_DISCORD_USER_ID = 501799772471033866
 # JOSH_DISCORD_USER_ID = 143992911153987584 # temp gages for testing
 
 START_TIME = datetime.now().isoformat()
@@ -134,7 +135,7 @@ class BetBotClient(discord.Client):
 
     async def on_message_delete(self, message: discord.Message):
         # repost juicy's messages
-        if message.author.id == JUICY_DISCORD_USER_ID and message.channel.guild.id in PREVIEW_SERVERS:
+        if message.author.id in [JUICY_DISCORD_USER_ID, SNOODLE_DISCORD_USER_ID] and message.channel.guild.id in PREVIEW_SERVERS:
             await message.channel.send(f"{message.author.mention}: {message.content}")
 
 def get_player_avg(server_name: str, player_name: str, last_index=4) -> int:
