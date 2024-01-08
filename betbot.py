@@ -4,12 +4,16 @@ from datetime import datetime
 from dotenv import load_dotenv
 from typing import NamedTuple
 
+import calendar
 import cachetools
 import discord
+import io
 import os
 import requests
 import uuid
 import threading
+import time
+import tempfile
 
 
 load_dotenv()
@@ -30,6 +34,16 @@ JUICY_DISCORD_USER_ID = 123273704846262272
 SNOODLE_DISCORD_USER_ID = 501799772471033866
 # JOSH_DISCORD_USER_ID = 143992911153987584 # temp gages for testing
 
+RECON_SERVER_ID = 1190718231221121106
+RECON_SERVER_TEAM_NINE_CHANNEL_ID = 1190718723670167595
+RECON_SERVER_SIEGE_LINEUP_CHANNEL_ID = 1190718844919107735
+RECON_SERVER_DESIGNER_VERY_SECRET_CHANNEL_ID = 1190751704820490290
+
+KERN_SERVER_TEAM_NINE_CHANNEL_ID = 1099374187065380914
+KERN_SERVER_SIEGE_LINEUP_CHANNEL_ID = 1066372939701813289
+
+DESIGNER_VERY_SECRET_CHANNEL_ID = 1190751530769469590
+
 START_TIME = datetime.now().isoformat()
 
 
@@ -41,13 +55,41 @@ class PlayerServerMessage(NamedTuple):
     server: str
 
 
+async def fwd_message(message: discord.Message, channel: discord.TextChannel):
+    unix_timestamp = int(calendar.timegm(message.created_at.timetuple()))
+    fwd_msg = f"<t:{unix_timestamp}:t> {message.author.display_name} ({message.author.name}): {message.content}"
+
+    files = []
+
+    for attachment in message.attachments:
+        attachment_bytes = await attachment.read()
+        fp = io.BytesIO(attachment_bytes)
+        files.append(discord.File(fp=fp, filename=attachment.filename))
+
+    await channel.send(fwd_msg, files=files, embeds=message.embeds)
+
+
 class BetBotClient(discord.Client):
     async def on_ready(self):
         print(f"Logged on as {self.user}")
 
+        self.recon_team_nine_channel = await self.fetch_channel(RECON_SERVER_TEAM_NINE_CHANNEL_ID)
+        self.recon_siege_lineup_channel = await self.fetch_channel(RECON_SERVER_SIEGE_LINEUP_CHANNEL_ID)
+        self.recon_designer_very_secret_channel = await self.fetch_channel(RECON_SERVER_DESIGNER_VERY_SECRET_CHANNEL_ID)
+
     async def on_message(self, message: discord.Message):
         if message.author == self.user:
             return
+        print(f"{message.created_at} [{message.guild.name}] {message.channel.name} {message.author.name} {message.author.display_name} - {message.content} {' '.join([x.url for x in message.attachments])}")
+
+        if message.channel.id == KERN_SERVER_SIEGE_LINEUP_CHANNEL_ID:
+            await fwd_message(message, self.recon_siege_lineup_channel)
+
+        if message.channel.id == KERN_SERVER_TEAM_NINE_CHANNEL_ID:
+            await fwd_message(message, self.recon_team_nine_channel)
+
+        if message.channel.id == DESIGNER_VERY_SECRET_CHANNEL_ID:
+            await fwd_message(message, self.recon_designer_very_secret_channel)
 
         if message.mention_everyone:
             return
